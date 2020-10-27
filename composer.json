@@ -13,5 +13,8 @@
         }
     },
     "minimum-stability": "dev",
-    "require": {}
+    "require": {
+        "pantheion/filesystem": "dev-master",
+        "pantheion/facade": "dev-master"
+    }
 }
