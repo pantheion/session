@@ -118,7 +118,7 @@ class Session
                 return $default;
             }
 
-            throw new \Exception("Key {$key} not found in the session storage");
+            return null;
         }
 
         return $this->data[$key];
@@ -148,6 +148,8 @@ class Session
         if($this->has($key)) {
             unset($this->data[$key]);
         }
+
+        $this->save();
     }
 
     /**
@@ -166,15 +168,12 @@ class Session
      *
      * @param string $key
      * @param $value
-     * @return void|mixed
+     * @return void
      */
-    public function flash(string $key, $value = null) 
-    {
-        if(!$value) {
-            return $this->get('_flash.new')[$key];
-        }
-
-        $this->put('_flash.new', Arr::merge($this->get('_flash.new', []), [$key => $value]));
+    public function flash(string $key, $value) 
+    {        
+        $this->put('_flash.new', Arr::merge($this->get('_flash.new', []), [$key]));
+        $this->put($key, $value);
     }
 
     /**
@@ -183,15 +182,12 @@ class Session
      *
      * @param string $key
      * @param $value
-     * @return void|mixed
+     * @return void
      */
-    public function old(string $key, $value = null) 
+    public function now(string $key, $value) 
     {
-        if (!$value) {
-            return $this->get('_flash.old')[$key];
-        }
-
-        $this->put('_flash.old', Arr::merge($this->get('_flash.old', []), [$key => $value]));
+        $this->put('_flash.old', Arr::merge($this->get('_flash.old', []), [$key]));
+        $this->put($key, $value);
     }
 
     /**
@@ -203,11 +199,46 @@ class Session
      */
     protected function tickFlash()
     {
+        $oldKeys = $this->get('_flash.old', []);
+        foreach($oldKeys as $key) {
+            $this->remove($key);
+        }
+
         $this->remove('_flash.old');
         
         $this->put('_flash.old', $this->get('_flash.new', []));
 
         $this->put('_flash.new', []);
+    }
+
+    /**
+     * Sets the _old_input flash data
+     *
+     * @param array $data
+     * @return void
+     */
+    public function flashInput(array $data)
+    {
+        $this->flash('_old_input', $data);
+    }
+
+    /**
+     * Gets an item from the _old_input
+     * flash data
+     *
+     * @param string $key
+     * @param $default
+     * @return mixed
+     */
+    public function getOldInput(string $key, $default = null)
+    {
+        $oldInput = $this->get('_old_input', []);
+
+        if(Arr::empty($oldInput)) {
+            return $default;
+        }
+
+        return Arr::has($oldInput, $key) ? $this->get('_old_input')[$key] : $default;
     }
 
     /**
