@@ -22,7 +22,7 @@ class Session
      *
      * @var string
      */
-    protected $id;
+    public $id;
 
     /**
      * Session's data
@@ -37,7 +37,7 @@ class Session
      * @param SessionFileHandler $handler
      * @param string $id
      */
-    public function __construct(SessionFileHandler $handler, string $id = null)
+    public function __construct(SessionFileHandler $handler)
     {
         $this->handler = $handler;
         $this->start();
